@@ -1,0 +1,7 @@
+[submodule "BQ34Z100G1-Driver"]
+	path = BQ34Z100G1-Driver
+	url = https://github.com/USCRPL/BQ34Z100G1-Driver.git
+[submodule "mbed-os"]
+	path = mbed-os
+	url = https://github.com/mbed-ce/mbed-os.git
+	shallow = true
