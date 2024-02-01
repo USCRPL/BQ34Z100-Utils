@@ -9,12 +9,11 @@
 
 class ChemIDMeasurer
 {
+    I2C i2c;
 	BQ34Z100 soc;
 
 	// charger control pins
-	DigitalIn acpPin;
 	DigitalIn chgPin;
-	DigitalIn progPin;
 	DigitalOut shdnPin;
 
 	Timer totalTimer;

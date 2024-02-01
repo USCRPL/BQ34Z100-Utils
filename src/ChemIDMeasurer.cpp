@@ -8,19 +8,16 @@
 #include "pins.h"
 
 ChemIDMeasurer::ChemIDMeasurer():
-soc(p9, p10, 100000),
-acpPin(p22),
-chgPin(p23),
-progPin(p15),
-shdnPin(p21)
+i2c(BQ34_I2C_SDA, BQ34_I2C_SCL),
+soc(i2c, 100000),
+chgPin(ACTIVATE_CHARGER_PIN),
+shdnPin(CHARGE_STATUS_PIN)
 {
 	//Initially keep charger in shdn
 	shdnPin.write(1);
 
-	// Disable MCU pullup resistors as they are enough to screw with the signal value.
+	// Disable MCU pullup resistors
 	chgPin.mode(PinMode::PullNone);
-	acpPin.mode(PinMode::PullNone);
-	progPin.mode(PinMode::PullNone);
 }
 
 void ChemIDMeasurer::activateCharger()

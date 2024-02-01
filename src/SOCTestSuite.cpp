@@ -6,7 +6,7 @@
 
 #include <cinttypes>
 
-I2C i2c(I2C_SDA, I2C_SCL);
+I2C i2c(BQ34_I2C_SDA, BQ34_I2C_SCL);
 BQ34Z100 soc(i2c, 100000);
 
 DigitalIn chgPin(CHARGE_STATUS_PIN);

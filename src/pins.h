@@ -2,8 +2,8 @@
 #define BQ34Z100G1_UTILS_PINS_H
 
 // Change these pin names to match how the BQ34 is connected on your processor
-#define I2C_SDA PB_9
-#define I2C_SCL PB_8
+#define BQ34_I2C_SDA PB_9
+#define BQ34_I2C_SCL PB_8
 
 // Pin which activates the charger.  Used for the Chem ID Measurer and some other tests
 #define ACTIVATE_CHARGER_PIN PF_1
