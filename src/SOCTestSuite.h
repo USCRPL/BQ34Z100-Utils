@@ -7,14 +7,11 @@
 
 #include "BQ34Z100.h"
 #include "mbed.h"
-#include "SerialStream.h"
-
-BQ34Z100 soc(PF_0, PF_1, 100000);
+#include "pins.h"
 
 class SOCTestSuite {
 public:
    void outputStatus();
-   void readACP();
    void sensorReset();
    void displayData();
    void testHamsterConnection();

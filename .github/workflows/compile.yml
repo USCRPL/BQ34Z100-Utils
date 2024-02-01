@@ -1,0 +1,30 @@
+name: Test that this Mbed project compiles
+
+on: push
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    container: ghcr.io/armmbed/mbed-os-env:master-latest
+    
+    strategy:
+      matrix:
+        mbed_target: 
+          # Change the below to match the target you want to compile the project for.
+          - NUCLEO_H723ZG
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Python dependencies
+        run: |
+            python3 -m pip install -r mbed-os/tools/requirements.txt
+
+      - name: Build project for ${{ matrix.mbed_target }}
+        run: |
+            mkdir build && cd build
+            cmake .. -GNinja -DMBED_TARGET=${{ matrix.mbed_target }}
+            ninja

@@ -5,9 +5,9 @@
 #include "ChemIDMeasurer.h"
 #include <cinttypes>
 
+#include "pins.h"
+
 ChemIDMeasurer::ChemIDMeasurer():
-serial(USBTX, USBRX, 115200),
-pc(serial),
 soc(p9, p10, 100000),
 acpPin(p22),
 chgPin(p23),
@@ -57,7 +57,7 @@ void ChemIDMeasurer::runMeasurement()
 		{
 			case State::INIT:
 				// Print header
-				pc.printf("Elapsed Time (s), Voltage (mV), Current (mA), Temperature (deg C), SoC (%%), Comments\n");
+				printf("Elapsed Time (s), Voltage (mV), Current (mA), Temperature (deg C), SoC (%%), Comments\n");
 				setState(State::CHARGE);
 				activateCharger();
 				comment = "Activating charger and entering CHARGE";
@@ -108,7 +108,7 @@ void ChemIDMeasurer::runMeasurement()
 
 
 		// print data column
-		pc.printf("%" PRIi64 ", %" PRIi16 ", %" PRIi32 ", %f, %" PRIu8 ", %s\n",
+		printf("%" PRIi64 ", %" PRIi16 ", %" PRIi32 ", %f, %" PRIu8 ", %s\n",
 			std::chrono::duration_cast<std::chrono::seconds>(totalTimer.elapsed_time()).count(),
 			voltage_mV, current_mA, temperatureC, soc.getSOC(), comment);
 

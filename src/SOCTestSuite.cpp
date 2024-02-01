@@ -6,10 +6,11 @@
 
 #include <cinttypes>
 
-DigitalIn acpPin(PF_11);
-DigitalIn chgPin(PF_12);
-// DigitalIn progPin(P);
-DigitalOut shdnPin(PF_13);
+I2C i2c(I2C_SDA, I2C_SCL);
+BQ34Z100 soc(i2c, 100000);
+
+DigitalIn chgPin(CHARGE_STATUS_PIN);
+DigitalOut shdnPin(ACTIVATE_CHARGER_PIN);
 
 // helper function to print a bitfield prettily.
 void printBitfield(uint16_t value, const char* name, const char** bitDescriptions)
@@ -126,10 +127,6 @@ void SOCTestSuite::sensorReset()
     }
 
     printf("Chip reads as FW_VERSION 0x%" PRIx16 ", HW version 0x%" PRIx16 "\r\n", soc.readFWVersion(), soc.readHWVersion());
-}
-
-void SOCTestSuite::readACP () {
-    printf("Reading ACP from LPC: %d\r\n", acpPin.read());
 }
 
 void SOCTestSuite::displayData()
@@ -331,16 +328,14 @@ void SOCTestSuite::calibrateCurrent()
 	soc.reset();
 	ThisThread::sleep_for(200ms);
 
-    // 2022-01-28: We need to comment out the coded calibration and use bqStudio for now.
+	 printf("Enter current through the sense resistor in A: ");
+	 float current=-1;
+	 scanf("%f", &current);
+	 printf("Hand measured current%f:\r\n\n", current);
 
-	// printf("Enter current through the sense resistor in A: ");
-	// float current=-1;
-	// scanf("%f", &current);
-	// printf("Hand measured current%f:\r\n\n", current);
-
-	// printf("Calibrating current shunt\r\n\r\n");
-	// int16_t current_int = (int16_t)(current*1000.0f);
-	// soc.calibrateShunt(current_int);
+	 printf("Calibrating current shunt\r\n\r\n");
+	 int16_t current_int = (int16_t)(current*1000.0f);
+	 soc.calibrateShunt(current_int);
 }
 
 void SOCTestSuite::discharge() {
@@ -374,9 +369,9 @@ void SOCTestSuite::relaxEmpty() {
 void SOCTestSuite::charge() {
 
     //Release from shdn
-    shdnPin.write(0);
+    shdnPin.write(CHARGER_PIN_ACTIVATE);
     ThisThread::sleep_for(10s);
-    if (!chgPin.read()) {
+    if (chgPin.read() == CHARGE_STATUS_CHARGING) {
         printf("Charging has started!\r\n");
     } else {
         printf("Charging did not start! Exiting.\r\n");
@@ -391,7 +386,7 @@ void SOCTestSuite::charge() {
 
     //Could use the CHG_I_OUT pin to read charging current, but we can also
     //just measure it with the gauge
-    while (!chgPin.read()) {
+    while (chgPin.read() == CHARGE_STATUS_CHARGING) {
         printf("%.02f,\t%d,\t%d\r\n",
         		std::chrono::duration_cast<std::chrono::duration<float>>(chargeTimer.elapsed_time()).count(),
         		voltage, current);
@@ -401,7 +396,7 @@ void SOCTestSuite::charge() {
     }
 
     printf("\r\nCharge Complete!\r\n");
-	shdnPin.write(1);
+	shdnPin.write(CHARGER_PIN_DEACTIVATE);
 
 }
 
@@ -429,7 +424,7 @@ void SOCTestSuite::relaxFull() {
 
 void SOCTestSuite::resetVoltageCalibration()
 {
-    soc.setVoltageDivider(RESETVOLTAGE);
+    soc.resetVoltageDivider();
     printf("\r\n\nVoltage divider calibration reset.\r\n");
 }
 
@@ -459,10 +454,8 @@ int main()
     SOCTestSuite harness;
 
     //Initially keep charger in shdn
-    shdnPin.write(1);
+    shdnPin.write(CHARGER_PIN_DEACTIVATE);
 	chgPin.mode(PinMode::PullNone);
-	acpPin.mode(PinMode::PullNone);
-	// progPin.mode(PinMode::PullNone);
 
     while(1){
         int test=-1;
@@ -471,7 +464,6 @@ int main()
         //Menu for each test item
         printf("Select a test: \n\r");
         printf("1.  Reset Sensor (Restart)\r\n");
-        printf("2.  Read AC adapter present (~ACP) pin\r\n");
         printf("3.  Write Settings for BQ34Z100\r\n");
         printf("4.  Calibrate Voltage\r\n");
         printf("5.  Calibrate Current\r\n");
@@ -496,7 +488,6 @@ int main()
         //SWITCH. ADD A CASE FOR EACH TEST.
         switch(test) {
             case 1:         harness.sensorReset();                           break;
-            case 2:         harness.readACP();                               break;
             case 3:         harness.writeSettings();                         break;
             case 4:         harness.calibrateVoltage();                      break;
             case 5:         harness.calibrateCurrent();                      break;

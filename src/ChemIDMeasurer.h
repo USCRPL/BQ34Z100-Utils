@@ -6,12 +6,9 @@
 #define PLZDONTEXPLODE_CHEMIDMEASURER_H
 
 #include <BQ34Z100.h>
-#include <SerialStream.h>
 
 class ChemIDMeasurer
 {
-	BufferedSerial serial;
-	SerialStream<BufferedSerial> pc;
 	BQ34Z100 soc;
 
 	// charger control pins
